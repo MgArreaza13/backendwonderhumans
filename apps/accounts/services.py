@@ -93,8 +93,9 @@ def register_user(data: dict, user: accounts_models.User):
 				email=email,
 				password=make_password(data.get('password1')),
 			)
-			if user_registered.email != "":
-				welcome_email.delay(user_registered.username, user_registered.email)
+			# if user_registered.email != "":
+			# 	welcome_email.delay(user_registered.username, user_registered.email)
 		except Exception as e:
+			print(e)
 			raise ValueError(str(_("An error occurred while saving the user")))
 	return user_registered
