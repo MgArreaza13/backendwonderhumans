@@ -10,6 +10,8 @@ from apps.accounts import validations as accounts_validations
 from django.contrib.auth.hashers import make_password
 from apps.accounts import tasks as accounts_task
 from apps.accounts.tasks import welcome_email
+from apps.accounts.models import Profile
+from apps.accounts.models import HomelessProfile
 
 def login(data: dict) -> accounts_models.User:
 	"""
@@ -99,3 +101,150 @@ def register_user(data: dict, user: accounts_models.User):
 			print(e)
 			raise ValueError(str(_("An error occurred while saving the user")))
 	return user_registered
+
+
+
+def get_profile(user: accounts_models.User) -> Profile:
+	try:
+		# Obtain profile from database if exist
+		profile = Profile.objects.get(Q(user__id=user.id))
+	except Profile.DoesNotExist as e:
+		raise ValueError(str(_("El usuario no tiene perfil")))
+	return profile
+
+
+def create_profile(data: dict, user: accounts_models.User) -> Profile :
+	"""
+		Get access user into.
+		Raise exception if user or password are incorrect or user does not exist.
+
+		:param data: user, photo, position, phone, address, city, state, country, zipcode
+		:type: dict.
+		:return: user.
+		:raises: ValueError, PermissionDenied.
+	"""
+	typeUser: str = data.get("typeUser", None)
+	occupation: str = data.get("occupation", None)
+	phone: str = data.get("phone", None)
+	address: str = data.get("address", None)
+	city: str = data.get("city", None)
+	state: str = data.get("state", None)
+	country: str = data.get("country", None)
+	dateOfBirth: str = data.get("dateOfBirth", None)
+	aboutYou: str = data.get("aboutYou", None)
+	profile: Profile = Profile.objects.filter(user = user)
+	if (len(profile) > 0):
+		# has profile
+		raise ValueError(str(_("El usuario tiene perfil")))
+	else:
+		# create profile
+		# Verify is user is active
+		if not user.is_active:
+			raise PermissionDenied(str(_("Cuenta bloqueada, contacte a los administradores.")))
+		try:
+			profile: Profile =  Profile.objects.create(
+
+				user = user,
+				typeUser = typeUser,
+				photo = getImage(data.get("photo", None)),
+				#Additional information personal
+				occupation = occupation,
+				phone = phone,
+				address = address,
+				city = city,
+				state = state,
+				country = country,
+				dateOfBirth = dateOfBirth,
+				aboutYou = aboutYou,
+			)
+		except Exception as e:
+			print(e)
+			raise ValueError(str(_("Se produjo un error al guardar el perfil.")))
+		return profile
+
+def change_profile(data: dict, user: Profile) -> Profile:
+	"""
+		Method to change profile name, lastname or profile.
+		raises exception if profile does not exist or the data sent is empty
+
+		:param data: user data.
+		:type data: dict.
+		:param user: user massone.
+		:type user: Model User.
+		:return: user
+		:raises: ValueError
+	"""
+
+
+	user.typeUser =data.get('typeUser')
+	user.photo = updateImage(data.get("photo", None))
+	user.occupation =data.get('occupation')
+	user.phone =data.get('phone')
+	user.address =data.get('address')
+	user.city =data.get('city')
+	user.state =data.get('state')
+	user.country =data.get('country')
+	user.dateOfBirth =data.get('dateOfBirth')
+	user.aboutYou =data.get('aboutYou')
+	user.save()
+   # logger.debug("profile has been changed correctly in account of %s" % user.username)
+	return user
+
+
+
+def create_homeless_profile(data: dict, user: accounts_models.User) -> Profile :
+	"""
+		Get access user into.
+		Raise exception if user or password are incorrect or user does not exist.
+
+		:param data: user, photo, position, phone, address, city, state, country, zipcode
+		:type: dict.
+		:return: user.
+		:raises: ValueError, PermissionDenied.
+	"""
+	userRegisterer = accounts_models.User.objects.get(id = user.id)
+	typeUser: str = 'homeless'
+	firstName: str = data.get("firstName", None)
+	lastName: str = data.get("lastName", None)
+	email: str = data.get("email", None)
+	occupation: str = data.get("occupation", None)
+	# phone: str = data.get("phone", None)
+	# address: str = data.get("address", None)
+	city: str = data.get("city", None)
+	state: str = data.get("state", None)
+	country: str = data.get("country", None)
+	dateOfBirth: str = data.get("dateOfBirth", None)
+	aboutYou: str = data.get("aboutYou", None)
+	try:
+		profile: Profile =  HomelessProfile.objects.create(
+
+			userRegisterer = userRegisterer,
+			firstName = firstName,
+			lastName = lastName,
+			typeUser = typeUser,
+			email = email,
+			# photo = getImage(data.get("photo", None)),
+			#Additional information personal
+			occupation = occupation,
+			# phone = phone,
+			# address = address,
+			city = city,
+			state = state,
+			country = country,
+			dateOfBirth = dateOfBirth,
+			aboutYou = aboutYou,
+		)
+	except Exception as e:
+		print(e)
+		raise ValueError(str(_("Se produjo un error al guardar el perfil.")))
+	return profile
+
+
+
+def get_profile_homeless(id_homeless: int) -> HomelessProfile:
+	try:
+		# Obtain profile from database if exist
+		profile = HomelessProfile.objects.get(Q(id= id_homeless))
+	except Profile.DoesNotExist as e:
+		raise ValueError(str(_("El usuario no tiene perfil")))
+	return profile
