@@ -45,7 +45,10 @@ INSTALLED_APPS = [
     'rest_auth',
     'djcelery_email',
     #my apps
-    'apps.accounts'
+    'apps.accounts',
+    'apps.comments',
+    'apps.donations',
+    'apps.portfolio'
 ]
 
 MIDDLEWARE = [

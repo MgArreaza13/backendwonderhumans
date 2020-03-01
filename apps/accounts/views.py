@@ -8,6 +8,7 @@ from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
 from apps.accounts import serializers as accounts_serializers
 from apps.accounts import services as accounts_services
+from apps.accounts import models as accounts_models
 from django.utils.translation import gettext as _
 from django.core.exceptions import PermissionDenied
 import json
@@ -114,7 +115,7 @@ class ManagementUserProfileViewSet(APIView):
 	def put(self, request):
 		body_unicode = request.body.decode('utf-8')
 		body = json.loads(body_unicode)
-		profile = Profile.objects.get(user= request.user)		
+		profile = accounts_models.Profile.objects.get(user= request.user)		
 		try:
 			user = accounts_services.change_profile(body, profile)
 		except ValueError as e:
@@ -173,4 +174,28 @@ class ManagementHomelessProfileViewSet(APIView):
 		# serializer = accounts_serializers.UserProfileSerializers(profile, many=False).data
 		return Response('datos guardados exitosamente', status=status.HTTP_200_OK)
 
-	
+
+
+
+class ManagementMyHomelessProfileViewSet (APIView):
+	"""
+		Service for user profiles 
+		contain cruds, creation, update, deleted, and list
+	"""
+
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request):
+		try:
+			profile = accounts_services.filterMyHomelessProfile(request.user)
+			# if(len(profile) == 0):
+			# 	 return Response({'detail': 'no profile'}, status=status.HTTP_404_NOT_FOUND)
+		except ValueError as e:
+			return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+		except PermissionDenied as e:
+			return Response({'detail': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+		except Exception as e:
+			return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+		# serializer = accounts_serializers.HomelessProfileSerializers(profile, many=False).data
+		# print(serializer)
+		return Response(profile, status=status.HTTP_200_OK)

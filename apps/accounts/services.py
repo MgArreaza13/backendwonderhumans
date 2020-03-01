@@ -12,6 +12,31 @@ from apps.accounts import tasks as accounts_task
 from apps.accounts.tasks import welcome_email
 from apps.accounts.models import Profile
 from apps.accounts.models import HomelessProfile
+from apps.utils.qr import saveQrCode
+
+
+
+def getImage(ur):
+    import base64
+
+    from django.core.files.base import ContentFile
+    
+    if ur != None:
+        format, imgstr = ur.split(';base64,')  # format ~= data:image/X,
+        ext = format.split('/')[-1]  # guess file extension
+        ur = ContentFile(base64.b64decode(imgstr), name='profileimg.' + ext)
+        return ur
+    return None
+
+def updateImage(ur):
+    import base64
+
+    from django.core.files.base import ContentFile
+    
+    format, imgstr = ur.split(';base64,')  # format ~= data:image/X,
+    ext = format.split('/')[-1]  # guess file extension
+    return ContentFile(base64.b64decode(imgstr), name='profileimg.' + ext)
+    #return ur
 
 def login(data: dict) -> accounts_models.User:
 	"""
@@ -123,7 +148,6 @@ def create_profile(data: dict, user: accounts_models.User) -> Profile :
 		:return: user.
 		:raises: ValueError, PermissionDenied.
 	"""
-	typeUser: str = data.get("typeUser", None)
 	occupation: str = data.get("occupation", None)
 	phone: str = data.get("phone", None)
 	address: str = data.get("address", None)
@@ -145,16 +169,15 @@ def create_profile(data: dict, user: accounts_models.User) -> Profile :
 			profile: Profile =  Profile.objects.create(
 
 				user = user,
-				typeUser = typeUser,
 				photo = getImage(data.get("photo", None)),
 				#Additional information personal
 				occupation = occupation,
-				phone = phone,
-				address = address,
+				phone = '0414850780',
+				address = 'las cayenas',
 				city = city,
-				state = state,
+				state = 'Monagas',
 				country = country,
-				dateOfBirth = dateOfBirth,
+				# dateOfBirth = '1994/04/1994',
 				aboutYou = aboutYou,
 			)
 		except Exception as e:
@@ -175,16 +198,14 @@ def change_profile(data: dict, user: Profile) -> Profile:
 		:raises: ValueError
 	"""
 
-
-	user.typeUser =data.get('typeUser')
-	user.photo = updateImage(data.get("photo", None))
+	# user.photo = updateImage(data.get("photo", None))
 	user.occupation =data.get('occupation')
-	user.phone =data.get('phone')
-	user.address =data.get('address')
+	user.phone = '04149609997' #data.get('phone')
+	user.address = 'Las Cayenas' #data.get('address')
 	user.city =data.get('city')
-	user.state =data.get('state')
+	user.state = 'Monagas' #data.get('state')
 	user.country =data.get('country')
-	user.dateOfBirth =data.get('dateOfBirth')
+	# user.dateOfBirth =data.get('dateOfBirth')
 	user.aboutYou =data.get('aboutYou')
 	user.save()
    # logger.debug("profile has been changed correctly in account of %s" % user.username)
@@ -223,7 +244,7 @@ def create_homeless_profile(data: dict, user: accounts_models.User) -> Profile :
 			lastName = lastName,
 			typeUser = typeUser,
 			email = email,
-			# photo = getImage(data.get("photo", None)),
+			photo = saveQrCode('http://localhost:4200/homeless-profile/4'),
 			#Additional information personal
 			occupation = occupation,
 			# phone = phone,
@@ -248,3 +269,35 @@ def get_profile_homeless(id_homeless: int) -> HomelessProfile:
 	except Profile.DoesNotExist as e:
 		raise ValueError(str(_("El usuario no tiene perfil")))
 	return profile
+
+
+def filterMyHomelessProfile(user: accounts_models.User):
+	#todo ponerle las validaciones
+	data = []
+	profiles = HomelessProfile.objects.filter(userRegisterer__id = user.id)
+	if (len(profiles) == 0):
+		# error 
+		return data
+	elif (len(profiles) > 0):
+
+		for p in profiles:
+			data.append(
+				{
+				'id': p.id,
+				'firstName': p.firstName,
+				'lastName' : p.lastName,
+				'email' : p.email,
+				# 'photo' : p.photo,
+				# Additional information personal
+				'occupation' : p.occupation,
+				'phone' : p.phone,
+				'address' : p.address,
+				'city' : p.city,
+				'state' : p.state,
+				'country' : p.country,
+				'dateOfBirth' : p.dateOfBirth,
+				'aboutYou' : p.aboutYou,
+				'created_at' : p.created_at
+				}
+			)
+		return data
