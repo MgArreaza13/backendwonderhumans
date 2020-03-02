@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('api/', include('rest_framework.urls')),
@@ -24,4 +26,4 @@ urlpatterns = [
     path('api/comments/', include('apps.comments.urls')),
     path('api/donations/', include('apps.donations.urls')),
     path('api/portfolio/', include('apps.portfolio.urls')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT, show_indexes=True,)
