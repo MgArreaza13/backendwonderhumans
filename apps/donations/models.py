@@ -6,6 +6,7 @@ from apps.accounts.models import HomelessProfile
 
 
 class Event(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null= True)
     homeless = models.ForeignKey(HomelessProfile, on_delete=models.CASCADE)
     name =  models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True, null= True)
