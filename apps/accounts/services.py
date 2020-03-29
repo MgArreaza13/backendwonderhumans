@@ -149,12 +149,12 @@ def create_profile(data: dict, user: accounts_models.User) -> Profile :
 		:raises: ValueError, PermissionDenied.
 	"""
 	occupation: str = data.get("occupation", None)
-	phone: str = data.get("phone", None)
-	address: str = data.get("address", None)
+	# phone: str = data.get("phone", None)
+	# address: str = data.get("address", None)
 	city: str = data.get("city", None)
-	state: str = data.get("state", None)
+	# state: str = data.get("state", None)
 	country: str = data.get("country", None)
-	dateOfBirth: str = data.get("dateOfBirth", None)
+	# dateOfBirth: str = data.get("dateOfBirth", None)
 	aboutYou: str = data.get("aboutYou", None)
 	profile: Profile = Profile.objects.filter(user = user)
 	if (len(profile) > 0):
@@ -172,10 +172,10 @@ def create_profile(data: dict, user: accounts_models.User) -> Profile :
 				photo = getImage(data.get("photo", None)),
 				#Additional information personal
 				occupation = occupation,
-				phone = '0414850780',
-				address = 'las cayenas',
+				# phone = '0414850780',
+				# address = 'las cayenas',
 				city = city,
-				state = 'Monagas',
+				# state = 'Monagas',
 				country = country,
 				# dateOfBirth = '1994/04/1994',
 				aboutYou = aboutYou,
@@ -200,10 +200,10 @@ def change_profile(data: dict, user: Profile) -> Profile:
 
 	# user.photo = updateImage(data.get("photo", None))
 	user.occupation =data.get('occupation')
-	user.phone = '04149609997' #data.get('phone')
-	user.address = 'Las Cayenas' #data.get('address')
+	# user.phone = data.get('phone')
+	# user.address = 'Las Cayenas' #data.get('address')
 	user.city =data.get('city')
-	user.state = 'Monagas' #data.get('state')
+	# user.state = data.get('state')
 	user.country =data.get('country')
 	# user.dateOfBirth =data.get('dateOfBirth')
 	user.aboutYou =data.get('aboutYou')
